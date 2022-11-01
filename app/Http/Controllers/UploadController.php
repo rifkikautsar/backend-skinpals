@@ -17,7 +17,6 @@ class UploadController extends Controller
     public function index(ServerRequestInterface $request): ResponseInterface
     {
         $headers = ['Access-Control-Allow-Origin' => '*'];
-
         if ($request->getMethod() === 'OPTIONS') {
             // Send response to OPTIONS requests
             $headers = array_merge($headers, [
@@ -33,7 +32,6 @@ class UploadController extends Controller
                 $response['data']['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
                 return new Response(405, $headers, json_encode($response));
             }
-    
             $contentType = $request->getHeader('Content-Type')[0];
             if (strpos($contentType, 'multipart/form-data') !== 0) {
                 $response['code'] = 400;
@@ -144,8 +142,11 @@ class UploadController extends Controller
                 $result = curl_exec($ch);
                 curl_close($ch);
                 $response['code'] = 200;
-                $response['data']['message'] = 'Foto berhasil diupload';
+                $response['message'] = 'Foto berhasil diupload';
                 $response['data']['result'] = json_decode($result);
+                $response['data']['action']['kandungan'] = null;
+                $response['data']['action']['rekomendasi'] = null;
+                $response['data']['action']['larangan'] = null;
                 return new Response(200, $headers, json_encode($response));
             } else {
                 $response['code'] = 400;
