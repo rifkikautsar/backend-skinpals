@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Google\Cloud\Storage\StorageClient;
 use PDO;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades;
 use Psr\Http\Message\ServerRequestInterface;
@@ -119,9 +120,10 @@ class UploadController extends Controller
                 // }
                 // $stmt = null;
                 $data = file_get_contents($tmpFile);
+                $path = storage_path() . "/bustling-bot-350614-5dab7679f2d4.json";
                 $storage = new StorageClient([
                     'projectId' => 'bustling-bot-350614',
-                    'keyFile' => json_decode(file_get_contents('bustling-bot-350614-5dab7679f2d4.json'), true)
+                    'keyFile' => json_decode(File::get($path),true)
                 ]);
                 $bucketName = 'kulitku-incubation';
                 $cloudPath = 'images/' . $name;
@@ -132,6 +134,7 @@ class UploadController extends Controller
                 $fields = [
                     'image' => $name,
                 ];
+                die;
                 $payload = json_encode($fields);
                 $ch = curl_init();
                 curl_setopt($ch,CURLOPT_URL, 'http://127.0.0.1:5000/api');
