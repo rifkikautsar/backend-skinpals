@@ -17,6 +17,8 @@ class UploadController extends Controller
 {
     public function index(ServerRequestInterface $request): ResponseInterface
     {
+        // $url = "https://predicts-gnkxwtwa6q-et.a.run.app";
+        $url = "http://127.0.0.1:5000/api";
         $headers = ['Access-Control-Allow-Origin' => '*'];
         if ($request->getMethod() === 'OPTIONS') {
             // Send response to OPTIONS requests
@@ -30,19 +32,22 @@ class UploadController extends Controller
             $headers = ['Content-Type' =>  'application/json'];            
             if ($request->getMethod() != 'POST') {
                 $response['code'] = 405;
-                $response['data']['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
+                $response['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
+                $response['data'] = null;
                 return new Response(405, $headers, json_encode($response));
             }
             $contentType = $request->getHeader('Content-Type')[0];
             if (strpos($contentType, 'multipart/form-data') !== 0) {
                 $response['code'] = 400;
-                $response['data']['message'] = 'Bad Request: Invalid Content-Type';
+                $response['message'] = 'Bad Request: Invalid Content-Type';
+                $response['data'] = null;
                 return new Response(400, $headers, json_encode($response));
             }
             if($request->getUploadedFiles()['uploads']){
                 if($request->getUploadedFiles()['uploads']->getSize()==0) {
                     $response['code'] = 400;
-                    $response['data']['message'] = 'Bad Request: No Photo Uploaded. (Size : ' . $request->getUploadedFiles()['uploads']->getSize(). ")";
+                    $response['message'] = 'Bad Request: No Photo Uploaded. (Size : ' . $request->getUploadedFiles()['uploads']->getSize(). ")";
+                    $response['data'] = null;
                     return new Response(400, $headers, json_encode($response));
                 }
                 $type = explode("/", $request->getUploadedFiles()['uploads']->getClientMediaType())[1];
@@ -51,74 +56,38 @@ class UploadController extends Controller
                 $tmpFile = $request->getUploadedFiles()['uploads']->getStream()->getMetadata('uri');
                 //Array type of image allow
                 $ext = [
-                    'image/png',
                     'image/jpg',
                     'image/jpeg',
-                    'image/webp'
                 ];
                 //Validation
                 //Maximum Size 10Mb
                 if($size > 1000*10000)
                 {
                     $response['code'] = 400;
-                    $response['data']['message'] = 'Bad Request: Maksimal Size 10 Mb!. (Size : ' . $request->getUploadedFiles()['uploads']->getSize(). ")";
+                    $response['message'] = 'Bad Request: Maksimal Size 10 Mb!. (Size : ' . $request->getUploadedFiles()['uploads']->getSize(). ")";
+                    $response['data'] = null;
                     return new Response(400, $headers, json_encode($response));
                 }
                 if(!in_array(mime_content_type($tmpFile), $ext))
                 {
                     $response['code'] = 400;
-                    $response['data']['message'] = 'Bad Request: Hanya format gambar yang diterima!';
+                    $response['message'] = 'Bad Request: Hanya format gambar (jpg) yang diterima!';
+                    $response['data'] = null;
                     return new Response(400, $headers, json_encode($response));
                 }
-                // try {
-                //     // if ($request->getParsedBody()['class'] == null){
-                //     //     $response['code'] = 400;
-                //     //     $response['data']['message'] = 'Bad Request: Tidak ada kelas';
-                //     //     return new Response(400, $headers, json_encode($response));
-                //     //     die;
-                //     // }
-                //     // if ($request->getParsedBody()['apiKey'] == null){
-                //     //     $response['code'] = 400;
-                //     //     $response['data']['message'] = 'Bad Request: Tidak ada apiKey';
-                //     //     return new Response(400, $headers, json_encode($response));
-                //     //     die;
-                //     // }
-                //     // if ($request->getParsedBody()['id'] == null){
-                //     //     $response['code'] = 400;
-                //     //     $response['data']['message'] = 'Bad Request: Tidak ada id';
-                //     //     return new Response(400, $headers, json_encode($response));
-                //     //     die;
-                //     // }
-                //     $username = getenv('DB_USERNAME');
-                //     $password = getenv('DB_PASSWORD');
-                //     $dbName = getenv('DB_DATABASE');
-                //     $dbHost = getenv('DB_HOST');
-                //     $conn = new PDO("mysql:host=".$dbHost.";dbname=".$dbName, $username, $password);
-                //     $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-                // } catch(PDOException $e) {
-                //     return new Response(401, $headers, json_encode("Gagal Koneksi ke Database ", $e->getMessage()));
-                //     die();
-                // }
-                // $id = $request->getParsedBody()['id'];
-                // $apiKey = $request->getParsedBody()['apiKey'];
-                // $class = $request->getParsedBody()['class'];
-                // $stmt = $conn->prepare("SELECT apiKey FROM users where id = :id");
-                // $stmt->bindParam(":id",$id);
-                // $stmt->execute();
-                // $data = $stmt->fetch(PDO::FETCH_ASSOC);
-                // if($stmt->rowCount() > 0){
-                //     if ($apiKey === $data['apiKey']){
-                //     } else {
-                //         $response['code'] = 403;
-                //         $response['data']['message'] = 'Akses anda dilarang. API Key tidak sesuai';
-                //         return new Response(403, $headers, json_encode($response));
-                //     }
-                // } else {
-                //     $response['code'] = 400;
-                //     $response['data']['message'] = 'Akun tidak terdaftar di database';
-                //     return new Response(400, $headers, json_encode($response));
-                // }
-                // $stmt = null;
+                try {
+                    $username = getenv('DB_USERNAME');
+                    $password = getenv('DB_PASSWORD');
+                    $dbName = getenv('DB_DATABASE');
+                    $dbHost = getenv('DB_HOST');
+                    $conn = new PDO("mysql:host=".$dbHost.";dbname=".$dbName, $username, $password);
+                    $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+                } catch (Exception $e){
+                    $response['code'] = 401;
+                    $response['message'] = "Gagal Koneksi ke Database ". $e->getMessage();
+                    $response['data'] = null;
+                    return new Response(401, $headers, json_encode($response));
+                }
                 $data = file_get_contents($tmpFile);
                 $path = storage_path() . "/bustling-bot-350614-5dab7679f2d4.json";
                 $storage = new StorageClient([
@@ -134,26 +103,61 @@ class UploadController extends Controller
                 $fields = [
                     'image' => $name,
                 ];
-                die;
                 $payload = json_encode($fields);
                 $ch = curl_init();
-                curl_setopt($ch,CURLOPT_URL, 'http://127.0.0.1:5000/api');
+                curl_setopt($ch,CURLOPT_URL, $url);
                 curl_setopt($ch,CURLOPT_POST, true);
                 curl_setopt($ch,CURLOPT_POSTFIELDS, $payload);
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
                 curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
                 $result = curl_exec($ch);
                 curl_close($ch);
-                $response['code'] = 200;
-                $response['message'] = 'Foto berhasil diupload';
-                $response['data']['result'] = json_decode($result);
-                $response['data']['action']['kandungan'] = null;
-                $response['data']['action']['rekomendasi'] = null;
-                $response['data']['action']['larangan'] = null;
-                return new Response(200, $headers, json_encode($response));
+                if(empty($result)){
+                    $response['code'] = 400;
+                    $response['message'] = 'Prediction Fail';
+                    $response['data'] = null;
+                    return new Response(400, $headers, json_encode($response));
+                }
+                $res = json_decode($result);
+                $class = $res->class;
+                try{
+                    $stmt = $conn->prepare("SELECT diseases.namaPenyakit, diseases.rekomendasi, ingredients.kandungan FROM diseases JOIN ingredients USING (disease_id) WHERE diseases.namaPenyakit = :class");
+                    $stmt->bindParam(":class",$class);
+                    $stmt->execute();
+                    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if($stmt->rowCount() > 0){
+                        $saran = explode(", ", $data['rekomendasi']);
+                        $banyakSaran = count($saran);
+                        for ($i=0; $i<$banyakSaran; $i++){
+                            $arraySaran[$i] = array("name" => $saran[$i]);
+                        }                        
+                        $kandungan = explode(", ", $data['kandungan']);
+                        $banyakKandungan = count($kandungan);
+                        for ($i=0; $i<$banyakKandungan; $i++){
+                            $arrayKandungan[$i] = array("name" => $kandungan[$i]);
+                        }
+                        $response['code'] = 200;
+                        $response['message'] = 'Success';
+                        $response['data']['result'] = $res;
+                        $response['data']['kandungan'] = $arrayKandungan;
+                        $response['data']['saran'] = $arraySaran;
+                        return new Response(200, $headers, json_encode($response));
+                    } else {
+                        $response['code'] = 404;
+                        $response['message'] = 'Data not found';
+                        $response['data'] = null;
+                        return new Response(404, $headers, json_encode($response));
+                    }
+                } catch(Exception $e){
+                    $response['code'] = 401;
+                    $response['message'] = "Gagal query ke Database ". $e->getMessage();
+                    $response['data'] = null;
+                    return new Response(401, $headers, json_encode($response));
+                }
             } else {
                 $response['code'] = 400;
-                $response['data']['message'] = 'Bad Request: Field Request';
+                $response['message'] = 'Bad Request: Field Request';
+                $response['data'] = null;
                 return new Response(400, $headers, json_encode($response));
             }  
         }
