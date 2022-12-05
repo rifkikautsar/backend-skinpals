@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use PDO;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\UriInterface;
@@ -28,62 +28,54 @@ class LoginController extends Controller
             $headers = ['Content-Type' =>  'application/json'];
             if ($request->getMethod() != 'POST') {
                 $response['code'] = 405;
-                $response['data']['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
+                $response['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
+                $response['data'] = null;
                 return new Response(405, $headers, json_encode($response));
             }
             $contentType = $request->getHeader('Content-Type')[0];
             if (strpos($contentType, 'application/json') !== 0) {
                 $response['code'] = 400;
-                $response['data']['message'] = 'Bad Request: Invalid Content-Type';
+                $response['message'] = 'Bad Request: Invalid Content-Type';
+                $response['data'] = null;
                 return new Response(400, $headers, json_encode($response));
             }
-            try{
-                $username = getenv('DB_USERNAME');
-                $password = getenv('DB_PASSWORD');
-                $dbName = getenv('DB_DATABASE');
-                $dbHost = getenv('DB_HOST');
-                $conn = new PDO("mysql:host=".$dbHost.";dbname=".$dbName, $username, $password);
-                $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-            } catch (PDOException $e) {
-                // tampilkan pesan kesalahan jika koneksi gagal
-                return new Response(401, $headers, json_encode("Gagal Koneksi ke Database ", $e->getMessage()));
-                die();
-            }
             $obj = json_decode($request->getBody()->getContents());
-            $stmt = $conn->prepare("SELECT * FROM users WHERE email = :email");
-            $stmt->bindParam(":email", $obj->email);
-            $stmt->execute();
-            $data = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($stmt->rowCount() > 0) {
-                if ($data['aktif'] == 0) {
+            $user = DB::table('users')->where('email', $obj->email)->first();
+            if (!empty($user)){
+                if($user->aktif == 0){
                     $response['code'] = 200;
-                    $response['data']['message'] = "Konfirmasi Email terlebih dahulu";
+                    $response['message'] = "Konfirmasi Email terlebih dahulu";
+                    $response['data'] = null;
                     return new Response(200, $headers, json_encode($response));
-                    exit();
                 } else {
-                    if (password_verify($obj->pass,$data['pass'])) {
-                        $array['id'] = $data['id'];
-                        $array['nama'] = $data['nama'];
-                        $array['email'] = $data['email'];
-                        $array['jenisKelamin'] = $data['jenisKelamin'];
-                        $array['jenisKulit'] = $data['jenisKulit'];
-                        $array['tanggalLahir'] = $data['tanggalLahir'];
-                        $array['apiKey'] = $data['apiKey'];
-                        
+                        if (password_verify($obj->pass,$user->pass)) {
+                            $dataUser = DB::table('users')
+                            ->join('informasi_kulit', 'users.user_id', '=', 'informasi_kulit.user_id')
+                            ->select('users.*', 'informasi_kulit.*')
+                            ->get()->first();
+                            $array['user_id'] = $dataUser->user_id;
+                            $array['nama'] = $dataUser->nama;
+                            $array['email'] = $dataUser->email;
+                            $array['jenisKelamin'] = $dataUser->jenisKelamin;
+                            $array['jenisKulit'] = $dataUser->jenisKulit;
+                            $array['tanggalLahir'] = $dataUser->tanggalLahir;
+                            $array['keluhan'] = $dataUser->keluhan;
                         $response['code'] = 200;
-                        $response['data']['message'] = "Login berhasil";
-                        $response['data']['user'] = $array;
+                        $response['message'] = "Login berhasil";
+                        $response['data'] = $array;
                         return new Response(200, $headers, json_encode($response));
                     } else {
                         $response['code'] = 400;
-                        $response['data']['message'] = "Login Gagal. Silakan ulangi";
+                        $response['message'] = "Login Gagal. Password Salah";
+                        $response['data'] = null;
                         return new Response(400, $headers, json_encode($response));
                     }
                 }
             } else {
-                $response['code'] = 400;
-                $response['data']['message'] = "Login Gagal. Silakan ulangi";
-                return new Response(400, $headers, json_encode($response));
+                    $response['code'] = 400;
+                    $response['message'] = "Data tidak ditemukan";
+                    $response['data'] = null;
+                    return new Response(400, $headers, json_encode($response));
             }
         }
     }
