@@ -22,7 +22,6 @@ class CreateUsersTable extends Migration
             $table->string('pass', 255)->nullable();
             $table->enum('aktif', ['1', '0'])->nullable();
             $table->enum('status', ['1', '0'])->nullable();
-            $table->string('apiKey', 255)->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
