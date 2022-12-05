@@ -53,7 +53,7 @@ class ArticleController extends Controller
         $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'articles.user_id')->select('id','users.user_id','nama','title','description','image','articles.created_at','articles.updated_at')->get();
         if (!empty($data)){
             for($i=0; $i<count($data);$i++){
-                $data[$i]->urlImage = "https://api.skinpals.id/images/article/".$data[$i]->image;
+                $data[$i]->urlImage = "https://api.skinpals.id/images/articles/".$data[$i]->image;
                 $data[$i]->ArticleById = "https://api.skinpals.id/article/".$data[$i]->id;
             }
             $response['code'] = 200;
@@ -67,7 +67,7 @@ class ArticleController extends Controller
         $headers = ['Content-Type' =>  'application/json'];
         $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'articles.user_id')->select('id','users.user_id','nama','title','description','image','articles.created_at','articles.updated_at')->where('id',$id)->first();
         if (!empty($data)){
-            $data->urlImage = "https://api.skinpals.id/images/article/".$data->image;
+            $data->urlImage = "https://api.skinpals.id/images/articles/".$data->image;
             $response['code'] = 200;
             $response['message'] = "Success";
             $response['data'] = $data;
