@@ -50,11 +50,24 @@ class ArticleController extends Controller
     public function all(Request $request): ResponseInterface
     {
         $headers = ['Content-Type' =>  'application/json'];
-        $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'articles.user_id')->select('id','users.user_id','nama','title','image','articles.created_at','articles.updated_at')->get();
+        $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'articles.user_id')->select('id','users.user_id','nama','title','description','image','articles.created_at','articles.updated_at')->get();
         if (!empty($data)){
             for($i=0; $i<count($data);$i++){
                 $data[$i]->urlImage = "https://api.skinpals/images/article/".$data[$i]->image;
+                $data[$i]->ArticleById = "https://api.skinpals/article/".$data[$i]->id;
             }
+            $response['code'] = 200;
+            $response['message'] = "Success";
+            $response['data'] = $data;
+            return new Response(200, $headers, json_encode($response));
+        }
+    }
+    public function getArticleById($key): ResponseInterface{
+        $id = $key;
+        $headers = ['Content-Type' =>  'application/json'];
+        $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'articles.user_id')->select('id','users.user_id','nama','title','description','image','articles.created_at','articles.updated_at')->where('id',$id)->first();
+        if (!empty($data)){
+            $data->urlImage = "https://api.skinpals/images/article/".$data->image;
             $response['code'] = 200;
             $response['message'] = "Success";
             $response['data'] = $data;
