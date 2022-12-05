@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UploadController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\RegisterController;
-
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -18,6 +18,8 @@ use App\Http\Controllers\RegisterController;
 */
 
 Route::post('/uploads', [UploadController::class, 'index']);
-// Route::post('/register', [RegisterController::class, 'index']);
-// Route::post('/login', [LoginController::class, 'index']);
+Route::post('/article', [ArticleController::class, 'index']);
+Route::get('/article', [ArticleController::class, 'all']);
+Route::post('/register', [RegisterController::class, 'index']);
+Route::post('/login', [LoginController::class, 'index']);
 // Route::get("/activation?{key}", [UserController::class, 'activation']);
