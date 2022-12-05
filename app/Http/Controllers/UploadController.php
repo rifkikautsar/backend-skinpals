@@ -75,6 +75,8 @@ class UploadController extends Controller
                     $response['data'] = null;
                     return new Response(400, $headers, json_encode($response));
                 }
+                $payload = $request->getParsedBody();
+                $user_id = $payload['user_id'];
                 $data = file_get_contents($tmpFile);
                 $path = storage_path() . "/bustling-bot-350614-5dab7679f2d4.json";
                 $storage = new StorageClient([
@@ -87,6 +89,8 @@ class UploadController extends Controller
                 $object = $bucket->upload($data, [
                     'name' => $cloudPath
                 ]);
+                $object->update(['acl' => []], ['predefinedAcl' => 'PUBLICREAD']);
+                $urlImage = "https://storage.googleapis.com/kulitku-incubation/images/". $name;
                 $fields = [
                     'image' => $name,
                 ];
@@ -107,12 +111,23 @@ class UploadController extends Controller
                 }
                 $res = json_decode($result);
                 $class = $res->class;
+
+                DB::beginTransaction();
                 try{
                     $data=DB::table('diseases')
                     ->join('ingredients', 'diseases.disease_id', '=', 'ingredients.disease_id')
-                    ->select('diseases.namaPenyakit', 'diseases.rekomendasi','ingredients.kandungan')->where('diseases.namaPenyakit',$class)
+                    ->select('diseases.namaPenyakit','diseases.disease_id', 'diseases.rekomendasi','ingredients.kandungan')->where('diseases.namaPenyakit',$class)
                     ->get()->first();
+                    $timestamps = date('Y-m-d H:i:s', time());
                     if(!empty($data)){
+                        $result = DB::table('results')->insert([
+                            "user_id" => $user_id,
+                            "disease_id" => $data->disease_id,
+                            "urlImage" => $urlImage,
+                            "created_at" => $timestamps,
+                            "updated_at" => $timestamps
+                        ]);
+                        DB::commit();
                         $saran = explode(", ", $data->rekomendasi);
                         $banyakSaran = count($saran);
                         for ($i=0; $i<$banyakSaran; $i++){
@@ -135,7 +150,8 @@ class UploadController extends Controller
                         $response['data'] = null;
                         return new Response(404, $headers, json_encode($response));
                     }
-                } catch(Exception $e){
+                } catch(\Exception $e){
+                    DB::rollback();
                     $response['code'] = 401;
                     $response['message'] = "Gagal query ke Database ". $e->getMessage();
                     $response['data'] = null;
