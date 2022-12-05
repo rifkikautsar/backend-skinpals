@@ -17,6 +17,7 @@ class CreateResultsTable extends Migration
             $table->id('result_id');
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('disease_id');
+            $table->string('urlImage',255);
             $table->timestamps();
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
             $table->foreign('disease_id')->references('disease_id')->on('diseases')->onDelete('cascade');
