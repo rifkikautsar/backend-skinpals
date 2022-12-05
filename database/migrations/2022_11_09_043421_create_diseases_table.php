@@ -17,6 +17,7 @@ class CreateDiseasesTable extends Migration
             $table->id('disease_id');
             $table->string('namaPenyakit', 50);
             $table->string('rekomendasi');
+            $table->string('larangan');
             $table->timestamps();
         });
     }
