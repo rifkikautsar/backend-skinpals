@@ -24,7 +24,11 @@ class ArticleController extends Controller
         ]);
         if($request->hasFile('image')) {
             $payload = $request->all();
-            $user = $payload['user_id'];
+            if(!empty($payload['user_id'])){
+                $user = $payload['user_id'];
+            } else {
+                $user = 1;
+            }
             $title = $payload['title'];
             $desc = $payload['description'];
             $file = $request->file('image');
@@ -50,7 +54,8 @@ class ArticleController extends Controller
     public function all(Request $request): ResponseInterface
     {
         $headers = ['Content-Type' =>  'application/json'];
-        $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'articles.user_id')->select('id','users.user_id','nama','title','description','image','articles.created_at','articles.updated_at')->get();
+        $data = DB::table('articles')->join('users', 'articles.user_id', '=', 'users.user_id')->select('id','nama','title','description','image','articles.created_at','articles.updated_at')->get();
+        
         if (!empty($data)){
             for($i=0; $i<count($data);$i++){
                 $data[$i]->urlImage = "https://api.skinpals.id/images/articles/".$data[$i]->image;
@@ -60,6 +65,11 @@ class ArticleController extends Controller
             $response['message'] = "Success";
             $response['data'] = $data;
             return new Response(200, $headers, json_encode($response));
+        }  else {
+            $response['code'] = 404;
+            $response['message'] = "Data Not Found";
+            $response['data'] = null;
+            return new Response(404, $headers, json_encode($response));
         }
     }
     public function getArticleById($key): ResponseInterface{

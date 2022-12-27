@@ -6,6 +6,7 @@ use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\DiseasesController;
 use App\Http\Controllers\RegisterController;
 /*
 |--------------------------------------------------------------------------
@@ -27,3 +28,5 @@ Route::post('/login', [LoginController::class, 'index']);
 Route::get('/results/{key}', [ResultController::class, 'index']);
 Route::get('/activation/{key}', [RegisterController::class, 'activation']);
 Route::put('/profile', [UserController::class, 'edit']);
+Route::get('/diseases', [DiseasesController::class, 'all']);
+Route::post('/diseases/post', [DiseasesController::class, 'index']);
