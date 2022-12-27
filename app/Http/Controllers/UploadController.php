@@ -76,8 +76,11 @@ class UploadController extends Controller
                     return new Response(400, $headers, json_encode($response));
                 }
                 $payload = $request->getParsedBody();
-                // $user_id = $payload['user_id'];
-                $user_id = 1;
+                if (!empty($payload['user_id'])){
+                    $user_id = $payload['user_id'];
+                } else {
+                    $user_id = 1;
+                }
                 $data = file_get_contents($tmpFile);
                 $path = storage_path() . "/bustling-bot-350614-5dab7679f2d4.json";
                 $storage = new StorageClient([
