@@ -18,17 +18,19 @@ class ResultController extends Controller
     public function index($key):ResponseInterface {
         $headers = ['Content-Type' =>  'application/json'];
 
-        $data = DB::table('results')->join('diseases', 'results.disease_id', '=', 'diseases.disease_id')->join('ingredients','diseases.disease_id','=','ingredients.disease_id')->select('results.*','diseases.disease_id', 'diseases.namaPenyakit', 'diseases.rekomendasi','diseases.larangan','ingredients.kandungan')->where("user_id",$key)->get()->first();
+        $data = DB::table('results')->join('diseases', 'results.disease_id', '=', 'diseases.disease_id')->join('ingredients','diseases.disease_id','=','ingredients.disease_id')->select('results.*','diseases.disease_id', 'diseases.namaPenyakit', 'diseases.rekomendasi','diseases.larangan','ingredients.kandungan')->where("user_id",$key)->get();
         if(!empty($data)){
-            $saran = explode(", ", $data->rekomendasi);
-            $banyakSaran = count($saran);
-            for ($i=0; $i<$banyakSaran; $i++){
-                $arraySaran[$i] = array("name" => $saran[$i]);
-            }                        
-            $kandungan = explode(", ", $data->kandungan);
-            $banyakKandungan = count($kandungan);
-            for ($i=0; $i<$banyakKandungan; $i++){
-                $arrayKandungan[$i] = array("name" => $kandungan[$i]);
+            for ($i=0; $i<count($data);$i++){
+                $saran = explode(", ", $data[$i]->rekomendasi);
+                $banyakSaran = count($saran);
+                for ($j=0; $j<$banyakSaran; $j++){
+                    $arraySaran[$j] = array("name" => $saran[$j]);
+                }                        
+                $kandungan = explode(", ", $data[$i]->kandungan);
+                $banyakKandungan = count($kandungan);
+                for ($j=0; $j<$banyakKandungan; $j++){
+                    $arrayKandungan[$j] = array("name" => $kandungan[$j]);
+                }
             }
             $response['code'] = 200;
             $response['message'] = "Success";
