@@ -52,7 +52,7 @@ class LoginController extends Controller
                             $dataUser = DB::table('users')
                             ->join('informasi_kulit', 'users.user_id', '=', 'informasi_kulit.user_id')
                             ->select('users.*', 'informasi_kulit.*')
-                            ->get()->first();
+                            ->where('email', $obj->email)->first();
                             $array['user_id'] = $dataUser->user_id;
                             $array['nama'] = $dataUser->nama;
                             $array['email'] = $dataUser->email;
