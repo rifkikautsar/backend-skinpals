@@ -25,5 +25,5 @@ Route::get('/article/{key}', [ArticleController::class, 'getArticleById']);
 Route::post('/register', [RegisterController::class, 'index']);
 Route::post('/login', [LoginController::class, 'index']);
 Route::get('/results/{key}', [ResultController::class, 'index']);
-
-// Route::get("/activation?{key}", [UserController::class, 'activation']);
+Route::get('/activation/{key}', [RegisterController::class, 'activation']);
+Route::put('/profile', [UserController::class, 'edit']);
