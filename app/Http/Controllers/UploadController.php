@@ -76,7 +76,8 @@ class UploadController extends Controller
                     return new Response(400, $headers, json_encode($response));
                 }
                 $payload = $request->getParsedBody();
-                $user_id = $payload['user_id'];
+                // $user_id = $payload['user_id'];
+                $user_id = 1;
                 $data = file_get_contents($tmpFile);
                 $path = storage_path() . "/bustling-bot-350614-5dab7679f2d4.json";
                 $storage = new StorageClient([
@@ -116,7 +117,7 @@ class UploadController extends Controller
                 try{
                     $data=DB::table('diseases')
                     ->join('ingredients', 'diseases.disease_id', '=', 'ingredients.disease_id')
-                    ->select('diseases.namaPenyakit','diseases.disease_id', 'diseases.rekomendasi','ingredients.kandungan')->where('diseases.namaPenyakit',$class)
+                    ->select('diseases.namaPenyakit','diseases.disease_id', 'diseases.rekomendasi','diseases.larangan','ingredients.kandungan')->where('diseases.namaPenyakit',$class)
                     ->get()->first();
                     $timestamps = date('Y-m-d H:i:s', time());
                     if(!empty($data)){
@@ -138,11 +139,17 @@ class UploadController extends Controller
                         for ($i=0; $i<$banyakKandungan; $i++){
                             $arrayKandungan[$i] = array("name" => $kandungan[$i]);
                         }
+                        $larangan = explode(", ", $data->larangan);
+                        $banyakLarangan = count($larangan);
+                        for ($i=0; $i<$banyakLarangan; $i++){
+                            $arrayLarangan[$i] = array("name" => $larangan[$i]);
+                        }
                         $response['code'] = 200;
                         $response['message'] = 'Success';
                         $response['data']['result'] = $res;
                         $response['data']['kandungan'] = $arrayKandungan;
                         $response['data']['saran'] = $arraySaran;
+                        $response['data']['larangan'] = $arrayLarangan;
                         return new Response(200, $headers, json_encode($response));
                     } else {
                         $response['code'] = 404;
