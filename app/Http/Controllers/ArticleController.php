@@ -12,6 +12,7 @@ use Psr\Http\Message\UriInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
@@ -49,6 +50,11 @@ class ArticleController extends Controller
             $response['message'] = "Success";
             $response['data'] = null;
             return new Response(200, $headers, json_encode($response));
+        } else {
+            $response['code'] = 400;
+            $response['message'] = "Image Not Found";
+            $response['data'] = null;
+            return new Response(200, $headers, json_encode($response));
         }
     }
     public function all(Request $request): ResponseInterface
@@ -58,6 +64,7 @@ class ArticleController extends Controller
         
         if (!empty($data)){
             for($i=0; $i<count($data);$i++){
+                $data[$i]->title = Str::limit($data[$i]->title, 20);
                 $data[$i]->urlImage = "https://api.skinpals.id/images/articles/".$data[$i]->image;
                 $data[$i]->ArticleById = "https://api.skinpals.id/article/".$data[$i]->id;
             }
