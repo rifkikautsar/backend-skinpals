@@ -31,13 +31,15 @@ class RegisterController extends Controller
             $headers = ['Content-Type' =>  'application/json'];
             if ($request->getMethod() != 'POST') {
                 $response['code'] = 405;
-                $response['data']['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
+                $response['message'] = 'Method Not Allowed: expected POST, found ' . $request->getMethod();
+                $response['data'] = null;
                 return new Response(405, $headers, json_encode($response));
             }
             $contentType = $request->getHeader('Content-Type')[0];
             if (strpos($contentType, 'application/json') !== 0) {
                 $response['code'] = 400;
                 $response['message'] = 'Bad Request: Invalid Content Type';
+                $response['data'] = null;
                 return new Response(400, $headers, json_encode($response));
             }
             //local time
@@ -58,7 +60,6 @@ class RegisterController extends Controller
                 $hashPasswd = password_hash($obj->pass, PASSWORD_DEFAULT);
                 $token=hash('sha256', md5(date('Y-m-d h:i:s').$obj->nama));
                 $hashToken = password_hash($token, PASSWORD_DEFAULT);
-                $mail = MailController::index($token,$obj->email);
                 $insertId = DB::table('users')->insertGetId([
                     'nama' => $obj->nama,
                     'email' => $obj->email,
@@ -66,19 +67,30 @@ class RegisterController extends Controller
                     'tanggalLahir' => $newDate,
                     'pass' => $hashPasswd,
                     'remember_token' => $token,
-                    'aktif' => '0',
+                    'aktif' => '1',
                     'status' => '0',
                     'created_at' => $timestamps,
                     'updated_at' => $timestamps
                 ]);
+                if (isset($obj->jenisKulit)){
+                    $jenisKulit = $obj->jenisKulit;
+                } else {
+                    $jenisKulit = null;
+                }
+                if (isset($obj->keluhan)) {
+                    $keluhan = $obj->keluhan;
+                } else {
+                    $keluhan = null;
+                }
                 $informasiKulit = DB::table('informasi_kulit')->insert([
                     'user_id' => $insertId,
-                    'jenisKulit' => $obj->jenisKulit,
-                    'keluhan' => $obj->keluhan,
+                    'jenisKulit' => $jenisKulit,
+                    'keluhan' => $keluhan,
                     'created_at' => $timestamps,
                     'updated_at' => $timestamps
                 ]);
                 DB::commit();
+                // $mail = MailController::index($token,$obj->email);
                 $response['code'] = 200;
                 $response['message'] = "Registrasi Berhasil";
                 $response['data'] = null;
