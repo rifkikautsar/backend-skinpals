@@ -17,7 +17,7 @@ class CreateInformasiKulitTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
             $table->string('jenisKulit', 25)->nullable();
-            $table->string('keluhan');
+            $table->string('keluhan')->nullable();
             $table->timestamps();
         });
     }

@@ -17,7 +17,7 @@ class CreateIngredientsTable extends Migration
             $table->id('ingredient_id');
             $table->unsignedBigInteger('disease_id');
             $table->foreign('disease_id')->references('disease_id')->on('diseases')->onDelete('cascade');
-            $table->string('kandungan', 255);
+            $table->string('kandungan', 255)->nullable();
             $table->timestamps();
         });
     }
