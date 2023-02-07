@@ -94,7 +94,7 @@ class UploadController extends Controller
                     'name' => $cloudPath
                 ]);
                 $object->update(['acl' => []], ['predefinedAcl' => 'PUBLICREAD']);
-                $urlImage = "https://storage.googleapis.com/kulitku-incubation/images/". $name;
+                $image = "https://storage.googleapis.com/kulitku-incubation/images/". $name;
                 $fields = [
                     'image' => $name,
                 ];
@@ -115,7 +115,6 @@ class UploadController extends Controller
                 }
                 $res = json_decode($result);
                 $class = $res->class;
-
                 DB::beginTransaction();
                 try{
                     $data=DB::table('diseases')
@@ -127,7 +126,7 @@ class UploadController extends Controller
                         $result = DB::table('results')->insert([
                             "user_id" => $user_id,
                             "disease_id" => $data->disease_id,
-                            "urlImage" => $urlImage,
+                            "urlImage" => $image,
                             "created_at" => $timestamps,
                             "updated_at" => $timestamps
                         ]);
