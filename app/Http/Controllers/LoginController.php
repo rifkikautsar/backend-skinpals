@@ -15,7 +15,6 @@ class LoginController extends Controller
     public function index(ServerRequestInterface $request): ResponseInterface
     {
         $headers = ['Access-Control-Allow-Origin' => '*'];
-
         if ($request->getMethod() === 'OPTIONS') {
             // Send response to OPTIONS requests
             $headers = array_merge($headers, [
@@ -40,42 +39,49 @@ class LoginController extends Controller
                 return new Response(400, $headers, json_encode($response));
             }
             $obj = json_decode($request->getBody()->getContents());
-            $user = DB::table('users')->where('email', $obj->email)->first();
-            if (!empty($user)){
-                if($user->aktif == 0){
-                    $response['code'] = 200;
-                    $response['message'] = "Konfirmasi Email terlebih dahulu";
-                    $response['data'] = null;
-                    return new Response(200, $headers, json_encode($response));
-                } else {
-                        if (password_verify($obj->pass,$user->pass)) {
-                            $dataUser = DB::table('users')
-                            ->join('informasi_kulit', 'users.user_id', '=', 'informasi_kulit.user_id')
-                            ->select('users.*', 'informasi_kulit.*')
-                            ->where('email', $obj->email)->first();
-                            $array['user_id'] = $dataUser->user_id;
-                            $array['nama'] = $dataUser->nama;
-                            $array['email'] = $dataUser->email;
-                            $array['jenisKelamin'] = $dataUser->jenisKelamin;
-                            $array['jenisKulit'] = $dataUser->jenisKulit;
-                            $array['tanggalLahir'] = $dataUser->tanggalLahir;
-                            $array['keluhan'] = $dataUser->keluhan;
+            if(isset($obj->pass) && isset($obj->email)){
+                $user = DB::table('users')->where('email', $obj->email)->first();
+                if (!empty($user)){
+                    if($user->aktif == 0){
                         $response['code'] = 200;
-                        $response['message'] = "Login berhasil";
-                        $response['data'] = $array;
+                        $response['message'] = "Konfirmasi Email terlebih dahulu";
+                        $response['data'] = null;
                         return new Response(200, $headers, json_encode($response));
                     } else {
+                            if (password_verify($obj->pass,$user->pass)) {
+                                $data = DB::table('users')
+                                ->join('informasi_kulit', 'users.user_id', '=', 'informasi_kulit.user_id')
+                                ->select('users.nama','users.email','users.jenisKelamin','users.tanggalLahir', 'informasi_kulit.*')
+                                ->where('email', $obj->email)->first();
+                                $array['user_id'] = $data->user_id;
+                                $array['nama'] = $data->nama;
+                                $array['email'] = $data->email;
+                                $array['jenisKelamin'] = $data->jenisKelamin;
+                                $array['jenisKulit'] = $data->jenisKulit;
+                                $array['tanggalLahir'] = $data->tanggalLahir;
+                                $array['keluhan'] = $data->keluhan;
+                            $response['code'] = 200;
+                            $response['message'] = "Login berhasil";
+                            $response['data'] = $array;
+                            return new Response(200, $headers, json_encode($response));
+                        } else {
+                            $response['code'] = 400;
+                            $response['message'] = "Login Gagal. Password Salah";
+                            $response['data'] = null;
+                            return new Response(400, $headers, json_encode($response));
+                        }
+                    }
+                } else {
                         $response['code'] = 400;
-                        $response['message'] = "Login Gagal. Password Salah";
+                        $response['message'] = "Data tidak ditemukan";
                         $response['data'] = null;
                         return new Response(400, $headers, json_encode($response));
-                    }
                 }
             } else {
-                    $response['code'] = 400;
-                    $response['message'] = "Data tidak ditemukan";
-                    $response['data'] = null;
-                    return new Response(400, $headers, json_encode($response));
+                $response['code'] = 400;
+                $response['message'] = "Key not exists";
+                $response['data'] = null;
+                return new Response(400, $headers, json_encode($response));
             }
         }
     }
