@@ -37,6 +37,7 @@ class SurveyController extends Controller
                 $response['data'] = null;
                 return new Response(400, $headers, json_encode($response));
             }
+            
             //local time
             $dt = new \DateTime("now", new \DateTimeZone('Asia/Jakarta'));
             $timestamps = $dt->format('Y-m-d H:i:s');
