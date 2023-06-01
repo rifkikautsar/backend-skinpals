@@ -40,11 +40,19 @@ class UserController extends Controller
             DB::beginTransaction();
             try {
                 $data = DB::table('users')->where('user_id',$payload['user_id'])->update(['nama' => $payload['nama'], 'tanggalLahir' => $payload['tanggalLahir'], 'jenisKelamin' => $payload['jenisKelamin'], 'updated_at' => $timestamps]);
-                $data = DB::table('informasi_kulit')->where('user_id',$payload['user_id'])->update([
-                    'jenisKulit' => $payload['jenisKulit'],
-                    'keluhan' => $payload['keluhan'],
-                    'updated_at' => $timestamps
-                ]);
+                if(isset($payload['keluhan'])){
+                    $data = DB::table('informasi_kulit')->where('user_id',$payload['user_id'])->update([
+                        'jenisKulit' => $payload['jenisKulit'],
+                        'keluhan' => $payload['keluhan'],
+                        'updated_at' => $timestamps
+                    ]);
+                } else {
+                    $data = DB::table('informasi_kulit')->where('user_id',$payload['user_id'])->update([
+                        'jenisKulit' => $payload['jenisKulit'],
+                        'updated_at' => $timestamps
+                    ]);
+                }
+
                 DB::commit();
                 $response['code'] = 200;
                 $response['message'] = "Edit Profile Success";

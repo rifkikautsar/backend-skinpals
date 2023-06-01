@@ -94,7 +94,7 @@ class UploadController extends Controller
                     'name' => $cloudPath
                 ]);
                 $object->update(['acl' => []], ['predefinedAcl' => 'PUBLICREAD']);
-                $image = "https://storage.googleapis.com/kulitku-incubation/images/". $name;
+                $image = "https://storage.googleapis.com/".$bucketName."/".$cloudPath."/".$name;
                 $fields = [
                     'image' => $name,
                 ];
