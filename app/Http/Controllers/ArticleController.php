@@ -89,6 +89,11 @@ class ArticleController extends Controller
             $response['message'] = "Success";
             $response['data'] = $data;
             return new Response(200, $headers, json_encode($response));
+        } else {
+            $response['code'] = 400;
+            $response['message'] = "No article data";
+            $response['data'] = null;
+            return new Response(200, $headers, json_encode($response));
         }
     }
 }
